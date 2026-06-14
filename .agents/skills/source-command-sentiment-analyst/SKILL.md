@@ -2,10 +2,11 @@
 name: "source-command-sentiment-analyst"
 description: "Multi-source sentiment analysis from news, StockTwits, and Reddit for a given ticker"
 ---
+<!-- GENERATED from .claude/commands/sentiment-analyst.md by sync_agentic_commands.py -- DO NOT EDIT -->
 
 # source-command-sentiment-analyst
 
-Use this skill when the user asks to run the migrated source command `sentiment-analyst`.
+Use this skill when the user asks to run the source command `sentiment-analyst`.
 
 ## Command Template
 

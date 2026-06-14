@@ -73,16 +73,20 @@ All knowledge and logs live there:
   performance/                   # QuantStats reports, weekly/monthly metrics
 ```
 
-## Codex skill mirror
+## Codex skill sync
 
-Codex can execute the same skills-based pipeline through mirrored skills in
-`.agents/skills/source-command-*/SKILL.md`. These mirror the Claude Code
-commands in `.claude/commands/*.md`, with only platform-specific wrappers and
-path references changed.
+Codex executes the same pipeline through generated skills in
+`.agents/skills/source-command-*/SKILL.md`. These are generated from the Claude
+Code commands by `scripts/sync_agentic_commands.py`.
 
-When editing agent prompts or pipeline steps, keep the Claude and Codex surfaces
-in sync. See `orchestration/AGENTIC-COLLABORATION.md` for the current mirror
-contract and the next-stage source-first sync plan.
+After editing any command in `.claude/commands/`, regenerate the Codex skills:
+
+```
+python3 scripts/sync_agentic_commands.py          # generate
+python3 scripts/sync_agentic_commands.py --check   # verify without writing
+```
+
+See `orchestration/AGENTIC-COLLABORATION.md` for the full collaboration contract.
 
 ### Decision log format
 

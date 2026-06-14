@@ -2,10 +2,11 @@
 name: "source-command-market-analyst"
 description: "Technical market analysis from OHLCV data and indicators for a given ticker"
 ---
+<!-- GENERATED from .claude/commands/market-analyst.md by sync_agentic_commands.py -- DO NOT EDIT -->
 
 # source-command-market-analyst
 
-Use this skill when the user asks to run the migrated source command `market-analyst`.
+Use this skill when the user asks to run the source command `market-analyst`.
 
 ## Command Template
 

@@ -2,10 +2,11 @@
 name: "source-command-news-analyst"
 description: "News research and macro analysis from ticker-specific and global news"
 ---
+<!-- GENERATED from .claude/commands/news-analyst.md by sync_agentic_commands.py -- DO NOT EDIT -->
 
 # source-command-news-analyst
 
-Use this skill when the user asks to run the migrated source command `news-analyst`.
+Use this skill when the user asks to run the source command `news-analyst`.
 
 ## Command Template
 

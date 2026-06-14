@@ -2,10 +2,11 @@
 name: "source-command-analyse-ticker"
 description: "Run the full multi-agent trading analysis pipeline for a single ticker"
 ---
+<!-- GENERATED from .claude/commands/analyse-ticker.md by sync_agentic_commands.py -- DO NOT EDIT -->
 
 # source-command-analyse-ticker
 
-Use this skill when the user asks to run the migrated source command `analyse-ticker`.
+Use this skill when the user asks to run the source command `analyse-ticker`.
 
 ## Command Template
 
@@ -25,7 +26,7 @@ The argument should be a ticker symbol, optionally followed by a date (defaults 
 
 ## Pipeline
 
-Execute these steps in order. Use the Agent tool to spawn subagents for each role. Each subagent receives the role prompt from the corresponding skill file plus the relevant data context.
+Execute these steps in order. Spawn subagents for each role. Each subagent receives the role prompt from the corresponding skill file plus the relevant data context.
 
 ### Step 1: Parse arguments
 
@@ -46,7 +47,7 @@ Capture each script's stdout as the data payload for the corresponding analyst.
 
 ### Step 3: Analyst reports (parallel)
 
-Spawn 4 analyst subagents in parallel using the Agent tool. Each subagent receives:
+Spawn 4 analyst subagents in parallel. Each subagent receives:
 - The role instructions from `.agents/skills/source-command-<role>/SKILL.md`
 - The relevant data from Step 2
 

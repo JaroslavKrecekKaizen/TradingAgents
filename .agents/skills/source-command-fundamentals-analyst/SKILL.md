@@ -2,10 +2,11 @@
 name: "source-command-fundamentals-analyst"
 description: "Financial statement analysis from company fundamentals, balance sheet, cash flow, and income data"
 ---
+<!-- GENERATED from .claude/commands/fundamentals-analyst.md by sync_agentic_commands.py -- DO NOT EDIT -->
 
 # source-command-fundamentals-analyst
 
-Use this skill when the user asks to run the migrated source command `fundamentals-analyst`.
+Use this skill when the user asks to run the source command `fundamentals-analyst`.
 
 ## Command Template
 

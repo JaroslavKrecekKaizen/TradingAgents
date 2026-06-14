@@ -2,10 +2,11 @@
 name: "source-command-trader"
 description: "Translates the research investment plan into a concrete transaction proposal"
 ---
+<!-- GENERATED from .claude/commands/trader.md by sync_agentic_commands.py -- DO NOT EDIT -->
 
 # source-command-trader
 
-Use this skill when the user asks to run the migrated source command `trader`.
+Use this skill when the user asks to run the source command `trader`.
 
 ## Command Template
 

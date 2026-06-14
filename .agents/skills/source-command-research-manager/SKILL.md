@@ -2,10 +2,11 @@
 name: "source-command-research-manager"
 description: "Debate facilitator that synthesises bull/bear arguments into an investment plan"
 ---
+<!-- GENERATED from .claude/commands/research-manager.md by sync_agentic_commands.py -- DO NOT EDIT -->
 
 # source-command-research-manager
 
-Use this skill when the user asks to run the migrated source command `research-manager`.
+Use this skill when the user asks to run the source command `research-manager`.
 
 ## Command Template
 

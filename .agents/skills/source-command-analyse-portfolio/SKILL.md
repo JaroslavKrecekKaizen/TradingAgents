@@ -2,10 +2,11 @@
 name: "source-command-analyse-portfolio"
 description: "Run the full analysis pipeline for all holdings in the ISA portfolio"
 ---
+<!-- GENERATED from .claude/commands/analyse-portfolio.md by sync_agentic_commands.py -- DO NOT EDIT -->
 
 # source-command-analyse-portfolio
 
-Use this skill when the user asks to run the migrated source command `analyse-portfolio`.
+Use this skill when the user asks to run the source command `analyse-portfolio`.
 
 ## Command Template
 

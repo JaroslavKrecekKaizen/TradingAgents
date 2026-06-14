@@ -2,10 +2,11 @@
 name: "source-command-risk-conservative"
 description: "Conservative risk analyst that prioritises asset protection and stability"
 ---
+<!-- GENERATED from .claude/commands/risk-conservative.md by sync_agentic_commands.py -- DO NOT EDIT -->
 
 # source-command-risk-conservative
 
-Use this skill when the user asks to run the migrated source command `risk-conservative`.
+Use this skill when the user asks to run the source command `risk-conservative`.
 
 ## Command Template
 

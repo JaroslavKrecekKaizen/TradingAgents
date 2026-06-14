@@ -2,10 +2,11 @@
 name: "source-command-portfolio-manager"
 description: "Final decision maker that synthesises the risk debate into a trading decision"
 ---
+<!-- GENERATED from .claude/commands/portfolio-manager.md by sync_agentic_commands.py -- DO NOT EDIT -->
 
 # source-command-portfolio-manager
 
-Use this skill when the user asks to run the migrated source command `portfolio-manager`.
+Use this skill when the user asks to run the source command `portfolio-manager`.
 
 ## Command Template
 

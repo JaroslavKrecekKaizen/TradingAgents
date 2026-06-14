@@ -2,10 +2,11 @@
 name: "source-command-risk-neutral"
 description: "Neutral risk analyst that provides a balanced perspective weighing both sides"
 ---
+<!-- GENERATED from .claude/commands/risk-neutral.md by sync_agentic_commands.py -- DO NOT EDIT -->
 
 # source-command-risk-neutral
 
-Use this skill when the user asks to run the migrated source command `risk-neutral`.
+Use this skill when the user asks to run the source command `risk-neutral`.
 
 ## Command Template
 

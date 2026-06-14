@@ -2,10 +2,11 @@
 name: "source-command-risk-aggressive"
 description: "Aggressive risk analyst that champions high-reward opportunities"
 ---
+<!-- GENERATED from .claude/commands/risk-aggressive.md by sync_agentic_commands.py -- DO NOT EDIT -->
 
 # source-command-risk-aggressive
 
-Use this skill when the user asks to run the migrated source command `risk-aggressive`.
+Use this skill when the user asks to run the source command `risk-aggressive`.
 
 ## Command Template
 

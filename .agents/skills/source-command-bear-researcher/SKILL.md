@@ -2,10 +2,11 @@
 name: "source-command-bear-researcher"
 description: "Bearish case advocate that highlights risks and challenges"
 ---
+<!-- GENERATED from .claude/commands/bear-researcher.md by sync_agentic_commands.py -- DO NOT EDIT -->
 
 # source-command-bear-researcher
 
-Use this skill when the user asks to run the migrated source command `bear-researcher`.
+Use this skill when the user asks to run the source command `bear-researcher`.
 
 ## Command Template
 
