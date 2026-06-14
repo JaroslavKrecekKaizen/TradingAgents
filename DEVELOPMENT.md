@@ -10,7 +10,7 @@
 - [x] Initial Codex mirror support in `.agents/skills/source-command-*/SKILL.md`
 - [x] Codex filesystem config in `.codex/config.toml`
 - [x] Agentic collaboration and skill-sync plan documented in `orchestration/AGENTIC-COLLABORATION.md`
-- [ ] End-to-end test of `/analyse-ticker` with a real ticker
+- [x] End-to-end test of `/analyse-ticker` with 4 Vanguard ISA tickers: VUKG.L, VWRP.L, VFEG.L, VJPB.L
 - [ ] End-to-end test of `/analyse-portfolio`
 - [ ] Source-first command and skill generator to prevent Claude/Codex drift
 
