@@ -7,12 +7,17 @@
 - [x] 12 agent skill files (`.claude/commands/*.md`) - all role prompts extracted
 - [x] `analyse-ticker` orchestration skill - full pipeline definition
 - [x] `analyse-portfolio` skill - portfolio-level analysis
+- [x] Initial Codex mirror support in `.agents/skills/source-command-*/SKILL.md`
+- [x] Codex filesystem config in `.codex/config.toml`
+- [x] Agentic collaboration and skill-sync plan documented in `orchestration/AGENTIC-COLLABORATION.md`
 - [ ] End-to-end test of `/analyse-ticker` with a real ticker
 - [ ] End-to-end test of `/analyse-portfolio`
+- [ ] Source-first command and skill generator to prevent Claude/Codex drift
 
 ### What's new in Stage 1
 - `scripts/` directory with 4 Python CLI scripts wrapping tradingagents/dataflows/
 - `.claude/commands/` with 14 skill files (12 agent roles + 2 orchestration)
+- `.agents/skills/` with Codex-compatible mirrors of the source commands
 - Skills-based pipeline replaces LangGraph orchestration
 - Zero API cost - runs on Teams subscription tokens via Claude Code subagents
 
@@ -168,6 +173,46 @@ risk debate -> final:
 
 ---
 
+## Stage 1.5 plan: Agentic command sync
+
+### Goal
+Make the Claude Code and Codex execution surfaces generated from a single
+source of truth so role prompts, tool commands, safety rules, and output formats
+cannot silently drift.
+
+### Current mirror contract
+- Claude Code executes `.claude/commands/*.md`.
+- Codex executes `.agents/skills/source-command-*/SKILL.md`.
+- Both surfaces call the same Python data tools in `scripts/`.
+- Valid differences are limited to platform naming, metadata wrappers, root
+  guide references (`CLAUDE.md` vs `AGENTS.md`), and prompt file paths.
+- See `orchestration/AGENTIC-COLLABORATION.md` for the full contract.
+
+### Recommended implementation
+1. Create canonical platform-neutral command files under
+   `orchestration/agentic/commands/`.
+2. Add `orchestration/agentic/manifest.yaml` describing command metadata,
+   required tools, allowed commands, output contracts, and safety gates.
+3. Add `scripts/sync_agentic_commands.py` to render `.claude/commands/*.md`
+   and `.agents/skills/source-command-*/SKILL.md`.
+4. Add a `--check` mode that fails when generated command or skill files are
+   stale, missing, or contain invalid path references.
+5. Add shared tool contracts for `scripts/fetch_market_data.py`,
+   `scripts/fetch_sentiment.py`, `scripts/fetch_news.py`, and
+   `scripts/fetch_fundamentals.py`.
+6. Update the development workflow so prompt and tool contract changes are made
+   in canonical source files, then generated into both execution surfaces.
+
+### Validation checklist
+- Every Claude command has a matching Codex skill.
+- Every Codex skill has a matching Claude command.
+- No legacy Codex command-directory references exist.
+- Safety rules match across generated outputs.
+- Data fetch commands and arguments match the manifest.
+- Referenced local files exist.
+
+---
+
 ## Session wrap-up checklist
 
 At the end of each development session, do the following:
@@ -175,6 +220,8 @@ At the end of each development session, do the following:
 1. **Update this file** - mark completed steps, note blockers, update current state
 2. **Commit changes** - conventional commit messages (feat:, fix:, docs:, chore:)
 3. **Update CLAUDE.md** if architecture or conventions changed
-4. **Update `config/portfolio.yaml`** if holdings changed
-5. **Note token/cost observations** for any test runs
-6. **Write a handoff summary** - what was done, what's next, any gotchas
+4. **Update AGENTS.md** if Codex architecture or conventions changed
+5. **Update `orchestration/AGENTIC-COLLABORATION.md`** if command or skill sync rules changed
+6. **Update `config/portfolio.yaml`** if holdings changed
+7. **Note token/cost observations** for any test runs
+8. **Write a handoff summary** - what was done, what's next, any gotchas
