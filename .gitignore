@@ -218,6 +218,12 @@ __marimo__/
 # Cache
 **/data_cache/
 
+# Ad-hoc analysis outputs (decisions go to Obsidian vault, not the repo)
+*-analysis.md
+decisions/
+
 # Enterprise env file (secrets) and generated run reports
 .env.enterprise
 reports/
+.env
+.venv/

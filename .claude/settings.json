@@ -1,0 +1,30 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3 scripts/fetch_market_data.py*)",
+      "Bash(python3 scripts/fetch_sentiment.py*)",
+      "Bash(python3 scripts/fetch_news.py*)",
+      "Bash(python3 scripts/fetch_fundamentals.py*)",
+      "Bash(cat config/*)",
+      "Bash(ls config/*)",
+      "Bash(ls scripts/*)",
+      "Bash(pip install*)",
+      "Bash(pip list*)",
+      "Bash(python3 -c*)",
+      "Bash(git log*)",
+      "Bash(git diff*)",
+      "Bash(git status*)",
+      "Bash(git branch*)",
+      "Bash(grep*)",
+      "Bash(find*)",
+      "Bash(jq*)",
+      "Bash(wc*)",
+      "mcp__filesystem__read_text_file",
+      "mcp__filesystem__read_file",
+      "mcp__filesystem__list_directory",
+      "mcp__filesystem__directory_tree",
+      "mcp__filesystem__write_file",
+      "mcp__filesystem__search_files"
+    ]
+  }
+}
