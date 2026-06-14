@@ -30,18 +30,31 @@ Execute these steps in order. Spawn subagents for each role. Each subagent recei
 
 ### Step 1: Parse arguments
 
-Extract ticker and date from the args. If no date is provided, use today's date (YYYY-MM-DD format).
+Extract ticker/ISIN and date from the args. If no date is provided, use today's date (YYYY-MM-DD format).
+
+Detect whether the input is an ISIN (12 characters, starts with 2-letter country code, e.g. IE00B5339C57) or a ticker (e.g. VUKG.L). This determines which fetch scripts to use in Step 2.
 
 ### Step 2: Fetch data (parallel)
 
-Run all 4 data fetch scripts via Bash. These can run in parallel since they are independent:
+Run all 4 data fetch scripts via Bash. These can run in parallel since they are independent.
 
+**For tickers** (e.g. VUKG.L, AAPL):
 ```
 .venv/bin/python scripts/fetch_market_data.py <ticker> <date>
 .venv/bin/python scripts/fetch_sentiment.py <ticker> <date>
 .venv/bin/python scripts/fetch_news.py <ticker> <date>
 .venv/bin/python scripts/fetch_fundamentals.py <ticker> <date>
 ```
+
+**For ISINs** (e.g. IE00B5339C57 - OEIC/SICAV funds):
+```
+.venv/bin/python scripts/fetch_market_data.py <ISIN> <date>
+.venv/bin/python scripts/fetch_sentiment.py <ISIN> <date>
+.venv/bin/python scripts/fetch_news.py <ISIN> <date>
+.venv/bin/python scripts/fetch_fund_profile.py <ISIN> <date>
+```
+
+The ISIN is resolved to a Yahoo Finance ticker automatically by the scripts. The key difference is that ISINs use `fetch_fund_profile.py` instead of `fetch_fundamentals.py` because funds have holdings and sector data, not company financial statements.
 
 Capture each script's stdout as the data payload for the corresponding analyst.
 
@@ -139,9 +152,11 @@ Spawn a portfolio manager subagent with:
 
 ### Step 9: Save decision
 
-Write the final decision to the Obsidian vault using the filesystem MCP server. The decision file should follow the format specified in AGENTS.md:
+Write the final decision to the Obsidian vault. Use the Write tool (or Bash `mkdir -p` + Write) to save directly to the vault path:
 
-Path: `<vault>/10-projects/trading-system/decisions/YYYY-MM-DD-TICKER.md`
+Path: `/Users/jarda/Documents/ATES/10-projects/trading-system/decisions/YYYY-MM-DD-TICKER.md`
+
+Always write to the vault, never to the repo. The `decisions/` directory already exists in the vault.
 
 ```markdown
 # Decision: TICKER - ACTION
@@ -157,8 +172,6 @@ Path: `<vault>/10-projects/trading-system/decisions/YYYY-MM-DD-TICKER.md`
 - **Risk factors:** [top risks from risk debate]
 - **Benchmark:** VWRP.L
 ```
-
-If the filesystem MCP server is not available, write the decision to `decisions/YYYY-MM-DD-TICKER.md` in the repo instead.
 
 ### Step 10: Report to user
 

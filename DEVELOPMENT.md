@@ -1,25 +1,34 @@
 # Development plan
 
-## Current state (Stage 1 in progress - 2026-06-13)
+## Current state (Stage 1 in progress - 2026-06-14)
 
 ### Stage 1 progress
-- [x] 4 data extraction CLI scripts (`scripts/fetch_*.py`) - tested with VUKG.L and AAPL
+- [x] 5 data extraction CLI scripts (`scripts/fetch_*.py`) - tested with tickers and ISINs
 - [x] 12 agent skill files (`.claude/commands/*.md`) - all role prompts extracted
-- [x] `analyse-ticker` orchestration skill - full pipeline definition
-- [x] `analyse-portfolio` skill - portfolio-level analysis
+- [x] `analyse-ticker` orchestration skill - handles both tickers and ISINs
+- [x] `analyse-portfolio` skill - multi-account portfolio analysis
 - [x] Initial Codex mirror support in `.agents/skills/source-command-*/SKILL.md`
 - [x] Codex filesystem config in `.codex/config.toml`
 - [x] Agentic collaboration and skill-sync plan documented in `orchestration/AGENTIC-COLLABORATION.md`
 - [x] End-to-end test of `/analyse-ticker` with 4 Vanguard ISA tickers: VUKG.L, VWRP.L, VFEG.L, VJPB.L
-- [ ] End-to-end test of `/analyse-portfolio`
+- [x] End-to-end test of `/analyse-ticker` with ISIN: IE00B5339C57 (Polar Capital Global Insurance)
+- [ ] End-to-end test of `/analyse-portfolio` (full multi-account run)
 - [x] Source-first sync: `scripts/sync_agentic_commands.py` generates Codex skills from Claude commands
+- [x] ISIN-to-Yahoo resolver (`isin_resolver.py`) - all 5 OEIC/SICAV funds now analysable
+- [x] Fund profile script (`fetch_fund_profile.py`) - top holdings, sectors, Morningstar ratings
+- [x] Portfolio moved from repo (`config/portfolio.yaml`) to Obsidian vault (`portfolio/` with Dataview dashboard)
+- [x] Multi-account portfolio support (Vanguard ISA + AJ Bell ISA)
 
 ### What's new in Stage 1
-- `scripts/` directory with 4 Python CLI scripts wrapping tradingagents/dataflows/
+- `scripts/` directory with 5 Python CLI scripts wrapping tradingagents/dataflows/
 - `.claude/commands/` with 14 skill files (12 agent roles + 2 orchestration)
 - `.agents/skills/` with Codex-compatible mirrors of the source commands
 - Skills-based pipeline replaces LangGraph orchestration
 - Zero API cost - runs on Teams subscription tokens via Claude Code subagents
+- ISIN resolution: `normalize_symbol()` detects ISINs and resolves via `yf.Search` with disk cache
+- Fund profile data: `fetch_fund_profile.py` replaces `fetch_fundamentals.py` for OEIC/SICAV funds
+- Portfolio in Obsidian vault: one note per holding with YAML frontmatter + Dataview dashboard
+- Multi-account support: Vanguard ISA (passive index) + AJ Bell ISA (thematic/active + gold)
 
 ---
 
@@ -38,10 +47,9 @@
 - Set via `.env`: `TRADINGAGENTS_LLM_PROVIDER`, `TRADINGAGENTS_DEEP_THINK_LLM`, `TRADINGAGENTS_QUICK_THINK_LLM`
 - Data source: yfinance for all categories (OHLCV, indicators, fundamentals, news)
 
-### Portfolio
-- `config/portfolio.yaml` populated from Vanguard Investor screenshot
+### Portfolio (Stage 0)
+- `config/portfolio.yaml` populated from Vanguard Investor screenshot (since moved to Obsidian vault)
 - 5 holdings: LifeStrategy 100% (OEIC, no ticker), VUKG.L, VWRP.L, VFEG.L, VJPB.L
-- LifeStrategy fund cannot be analysed via yfinance (not exchange-traded)
 
 ### Cost observation
 - Single AAPL run with Sonnet 4.6: ~$1-2, ~12 min wall clock
@@ -50,7 +58,6 @@
 ### Files changed from upstream fork
 - `.env` - added `TRADINGAGENTS_*` config vars
 - `main.py` - changed ticker/date for test run
-- `config/portfolio.yaml` - new file with ISA holdings
 - `CLAUDE.md` - project context with correct tickers
 - `DEVELOPMENT.md` - this file
 
@@ -122,8 +129,8 @@ Create `.claude/commands/analyse-ticker.md` (or a workflow script) that:
 
 #### Step 4: Portfolio-level analysis
 Create `.claude/commands/analyse-portfolio.md` that:
-1. Reads `config/portfolio.yaml`
-2. Runs analyse-ticker for each holding with a yfinance ticker
+1. Reads portfolio holdings from Obsidian vault (`portfolio/` folder)
+2. Runs analyse-ticker for each holding (ticker or ISIN)
 3. Synthesises portfolio-level recommendations (rebalancing, correlation)
 
 ### Agent prompt mapping
@@ -194,6 +201,6 @@ At the end of each development session, do the following:
 3. **Update CLAUDE.md** if architecture or conventions changed
 4. **Update AGENTS.md** if Codex architecture or conventions changed
 5. **Update `orchestration/AGENTIC-COLLABORATION.md`** if command or skill sync rules changed
-6. **Update `config/portfolio.yaml`** if holdings changed
+6. **Update portfolio notes in Obsidian vault** if holdings changed
 7. **Note token/cost observations** for any test runs
 8. **Write a handoff summary** - what was done, what's next, any gotchas

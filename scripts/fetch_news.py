@@ -14,17 +14,21 @@ from dateutil.relativedelta import relativedelta
 sys.path.insert(0, ".")
 
 from tradingagents.dataflows.yfinance_news import get_news_yfinance, get_global_news_yfinance
+from tradingagents.dataflows.symbol_utils import normalize_symbol, is_isin
 
 NEWS_LOOKBACK_DAYS = 7
 
 
 def main():
     if len(sys.argv) < 3:
-        print("Usage: python scripts/fetch_news.py <ticker> <date>", file=sys.stderr)
+        print("Usage: python scripts/fetch_news.py <ticker|ISIN> <date>", file=sys.stderr)
         sys.exit(1)
 
     ticker = sys.argv[1]
     curr_date = sys.argv[2]
+
+    if is_isin(ticker):
+        ticker = normalize_symbol(ticker)
 
     curr_dt = datetime.strptime(curr_date, "%Y-%m-%d")
     start_date = (curr_dt - relativedelta(days=NEWS_LOOKBACK_DAYS)).strftime("%Y-%m-%d")

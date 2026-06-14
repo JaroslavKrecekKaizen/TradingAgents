@@ -89,19 +89,28 @@ _ALIASES = {
 _YAHOO_SAFE = re.compile(r"^[A-Za-z0-9._\-\^=]+$")
 
 
+_ISIN_RE = re.compile(r"^[A-Z]{2}[A-Z0-9]{10}$")
+
+
+def is_isin(value: str) -> bool:
+    """True when ``value`` looks like an ISIN (2 letter country + 10 alphanumeric)."""
+    return bool(_ISIN_RE.match(value.strip().upper()))
+
+
 def normalize_symbol(raw: str) -> str:
     """Map a user/broker symbol to its canonical Yahoo Finance symbol.
 
     Resolution order (first match wins):
-      1. Explicit alias table (metals, energy, index CFDs).
-      2. Crypto rule: ``<BASE>USD`` where BASE is a known crypto -> ``BASE-USD``.
-      3. Forex rule: six letters that are two ISO currency codes -> ``PAIR=X``.
-      4. Otherwise the upper-cased symbol is returned unchanged (plain
+      1. ISIN (12-char, 2-letter country prefix): resolved to a Yahoo
+         ticker via ``yf.Search`` with a persistent disk cache.
+      2. Explicit alias table (metals, energy, index CFDs).
+      3. Crypto rule: ``<BASE>USD`` where BASE is a known crypto -> ``BASE-USD``.
+      4. Forex rule: six letters that are two ISO currency codes -> ``PAIR=X``.
+      5. Otherwise the upper-cased symbol is returned unchanged (plain
          equities, ETFs, Yahoo-native symbols like ``GC=F`` or ``^GSPC``).
 
     A trailing ``+`` (broker CFD marker, e.g. ``XAUUSD+``) is stripped before
-    matching. The function is purely syntactic — it performs no network
-    calls — so it is safe to apply on every request.
+    matching.
     """
     if not isinstance(raw, str) or not raw.strip():
         return raw
@@ -109,6 +118,10 @@ def normalize_symbol(raw: str) -> str:
     s = raw.strip().upper()
     # Broker CFD/qualifier suffixes Yahoo never uses.
     s = s.rstrip("+")
+
+    if _ISIN_RE.match(s):
+        from .isin_resolver import resolve_isin
+        return resolve_isin(s)
 
     if s in _ALIASES:
         canonical = _ALIASES[s]

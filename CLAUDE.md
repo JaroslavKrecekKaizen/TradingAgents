@@ -29,6 +29,7 @@ trading-system/                  # Root = forked TradingAgents repo
     fetch_sentiment.py           # News headlines + StockTwits + Reddit
     fetch_news.py                # Ticker news + global macro news
     fetch_fundamentals.py        # Financials, balance sheet, cash flow, income
+    fetch_fund_profile.py        # Fund profile: holdings, sectors, Morningstar (for OEICs/SICAVs)
   .claude/
     commands/                    # Claude Code slash commands (skills)
       analyse-ticker.md          # Master pipeline for single-ticker analysis
@@ -49,7 +50,6 @@ trading-system/                  # Root = forked TradingAgents repo
     routines/                    # Routine definitions
     hooks/                       # Lifecycle hooks (decision logging, safety)
   config/
-    portfolio.yaml               # ISA holdings, tickers, weights, simulation params
     providers.yaml               # API provider config (no secrets - those go in .env)
   CLAUDE.md                      # This file
   .mcp.json                      # MCP server configuration
@@ -60,11 +60,12 @@ trading-system/                  # Root = forked TradingAgents repo
 
 ## Obsidian vault structure
 
-The Obsidian vault path is configured in .mcp.json under the filesystem MCP server.
-All knowledge and logs live there:
+The Obsidian vault lives at `/Users/jarda/Documents/ATES`. All knowledge, logs, and
+human-readable output live there. The trading-system subtree:
 
 ```
-<vault>/10-projects/trading-system/
+/Users/jarda/Documents/ATES/10-projects/trading-system/
+  portfolio/                     # One note per holding (YAML frontmatter) + Dashboard
   decisions/                     # Structured decision records (YYYY-MM-DD-TICKER.md)
   reflections/                   # Post-hoc outcome analysis, lessons learned
   market-notes/                  # Manual observations
@@ -90,7 +91,8 @@ See `orchestration/AGENTIC-COLLABORATION.md` for the full collaboration contract
 
 ### Decision log format
 
-Each decision is a markdown file: `decisions/YYYY-MM-DD-TICKER.md`
+Each decision is a markdown file saved to the Obsidian vault:
+`/Users/jarda/Documents/ATES/10-projects/trading-system/decisions/YYYY-MM-DD-TICKER.md`
 
 ```markdown
 # Decision: TICKER - ACTION
@@ -125,15 +127,26 @@ Each reflection: `reflections/YYYY-MM-DD-TICKER-reflection.md`
 
 ## Current portfolio (ISA simulation)
 
-See config/portfolio.yaml for full details. Holdings (all accumulating share classes):
+Holdings live in the Obsidian vault under `portfolio/` (one note per holding with
+YAML frontmatter, queryable via Dataview). Two ISA accounts, benchmark VWRP.L.
 
-- LifeStrategy 100% Equity Fund Acc (OEIC, no yfinance ticker - 28%)
+All holdings are analysable - pass either tickers or ISINs to `/analyse-ticker`.
+ISINs are auto-resolved to Yahoo Finance tickers via `isin_resolver.py`.
+
+**Vanguard ISA** (~GBP 46K value, passive index ETFs):
 - VUKG.L (FTSE 100 Acc - 17%)
 - VWRP.L (All-World Acc - 28%) - also the benchmark
 - VFEG.L (Emerging Markets Acc - 9%)
 - VJPB.L (Japan Acc - 18%)
+- LifeStrategy 100% Equity Fund Acc (ISIN GB00B41XG308 - 28%)
 
-Total cost: ~GBP 49,750. Total value: ~GBP 46,050.
+**AJ Bell ISA** (~GBP 51K value, thematic/active + gold):
+- PHGP.L (WisdomTree Physical Gold - 20%)
+- SGLP.L (Invesco Physical Gold ETC - 9%)
+- L&G Global Technology Index I Acc (ISIN GB00B0CNH163 - 28%)
+- Fidelity Global Technology W-Acc-GBP (ISIN LU1033663649 - 20%)
+- Janus Henderson Global Financials I Acc (ISIN GB0031919235 - 12%)
+- Polar Capital Global Insurance I Acc (ISIN IE00B5339C57 - 11%)
 
 ## Tech stack
 

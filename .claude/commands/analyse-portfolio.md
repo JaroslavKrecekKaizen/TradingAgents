@@ -3,7 +3,7 @@ name: analyse-portfolio
 description: Run the full analysis pipeline for all holdings in the ISA portfolio
 ---
 
-Run the full multi-agent trading analysis pipeline for each holding in the ISA portfolio that has a yfinance ticker. Then synthesise portfolio-level recommendations.
+Run the full multi-agent trading analysis pipeline for each holding across all ISA accounts that has a yfinance ticker. Produce per-account summaries and a consolidated portfolio view.
 
 Optional argument: date (defaults to today). Example:
 - `/analyse-portfolio`
@@ -18,17 +18,16 @@ Optional argument: date (defaults to today). Example:
 
 ### Step 1: Read portfolio
 
-Read `config/portfolio.yaml` to get the list of holdings. Filter to holdings that have a non-null `ticker` field (LifeStrategy 100% is excluded because it has no yfinance ticker).
+Read all holding notes from the Obsidian vault portfolio folder at `/Users/jarda/Documents/ATES/10-projects/trading-system/portfolio/`. Each note has YAML frontmatter with `type: holding`, `account`, `ticker`, `isin`, and valuation fields.
 
-The holdings with tickers are:
-- VUKG.L (Vanguard FTSE 100 UCITS ETF)
-- VWRP.L (Vanguard FTSE All-World UCITS ETF) - also the benchmark
-- VFEG.L (Vanguard FTSE Emerging Markets UCITS ETF)
-- VJPB.L (Vanguard FTSE Japan UCITS ETF)
+All holdings are now analysable. For holdings with a `ticker` field, pass the ticker to `/analyse-ticker`. For holdings without a ticker but with an `isin` field, pass the ISIN instead - the pipeline auto-resolves ISINs to Yahoo Finance tickers.
+
+**Vanguard ISA:** VUKG.L, VWRP.L (benchmark), VFEG.L, VJPB.L, LifeStrategy (via ISIN GB00B41XG308)
+**AJ Bell ISA:** SGLP.L, PHGP.L, plus 4 funds via ISIN (GB00B0CNH163, LU1033663649, GB0031919235, IE00B5339C57)
 
 ### Step 2: Analyse each holding
 
-For each holding with a ticker, invoke the `/analyse-ticker` skill (or run the same pipeline manually). Run them sequentially to avoid overwhelming the system.
+For each holding, invoke the `/analyse-ticker` skill with either the ticker or ISIN. Run them sequentially to avoid overwhelming the system.
 
 For each holding, collect:
 - The portfolio manager's final rating
@@ -36,11 +35,11 @@ For each holding, collect:
 - The investment thesis
 - Key price levels
 
-### Step 3: Portfolio-level synthesis
+### Step 3: Per-account synthesis
 
-After all individual analyses are complete, synthesise a portfolio-level view:
+For each account, produce a holdings summary table:
 
-1. **Holdings summary table:**
+**Vanguard ISA:**
 
 | Holding | Weight | Rating | Key Thesis | Current Price |
 |---------|--------|--------|------------|---------------|
@@ -50,25 +49,43 @@ After all individual analyses are complete, synthesise a portfolio-level view:
 | VJPB.L | 17.67% | ... | ... | ... |
 | LifeStrategy | 28.28% | N/A | No ticker | N/A |
 
-2. **Correlation and diversification** - Are the holdings well-diversified? Do they cover different geographies and sectors? Are any positions redundant?
+**AJ Bell ISA:**
 
-3. **Rebalancing recommendations** - Based on the individual ratings, should any positions be adjusted? Consider:
+| Holding | Weight | Rating | Key Thesis | Current Price |
+|---------|--------|--------|------------|---------------|
+| L&G Global Tech | ~24% | N/A | No ticker | N/A |
+| Fidelity Global Tech | ~20% | N/A | No ticker | N/A |
+| Janus Henderson Financials | ~14% | N/A | No ticker | N/A |
+| Polar Capital Insurance | ~14% | N/A | No ticker | N/A |
+| PHGP.L | ~19% | ... | ... | ... |
+| SGLP.L | ~9% | ... | ... | ... |
+
+### Step 4: Consolidated portfolio view
+
+Combine both accounts into a single view:
+
+1. **Consolidated holdings table** - all holdings across both ISAs with combined weights (by value where available, by cost where not)
+
+2. **Asset allocation** - break down by asset class (equity, commodity) and sector/geography across both accounts
+
+3. **Correlation and diversification** - assess overlap and concentration across the combined portfolio. Note that the AJ Bell ISA is heavily tilted toward technology (~44% by cost) and gold (~28% by cost)
+
+4. **Rebalancing recommendations** - consider cross-account rebalancing opportunities:
    - Holdings rated Overweight/Buy - increase allocation
    - Holdings rated Underweight/Sell - decrease allocation
    - Holdings rated Hold - maintain
-   - Overall portfolio balance across regions
+   - Sector concentration risks across both accounts
 
-4. **Risk assessment** - What is the portfolio's overall risk profile? Are there concentrated risks (e.g. all holdings correlated to US tech)?
+5. **Risk assessment** - combined portfolio risk profile, concentrated risks, currency exposure
 
-5. **Action items** - Specific, prioritised recommendations for the next rebalancing.
+6. **Action items** - specific, prioritised recommendations per account
 
-### Step 4: Save portfolio report
+### Step 5: Save portfolio report
 
-Write the portfolio analysis to the Obsidian vault:
-Path: `<vault>/10-projects/trading-system/decisions/YYYY-MM-DD-PORTFOLIO.md`
+Write the portfolio analysis to the Obsidian vault. Always write directly to the vault path, never to the repo:
 
-If the filesystem MCP server is not available, write to `decisions/YYYY-MM-DD-PORTFOLIO.md` in the repo.
+Path: `/Users/jarda/Documents/ATES/10-projects/trading-system/decisions/YYYY-MM-DD-PORTFOLIO.md`
 
-### Step 5: Report to user
+### Step 6: Report to user
 
-Present the portfolio-level summary with the holdings table, rebalancing recommendations, and action items.
+Present the consolidated portfolio summary with per-account tables, combined asset allocation, rebalancing recommendations, and action items.
