@@ -29,29 +29,29 @@ trading-system/                  # Root = forked TradingAgents repo
     fetch_sentiment.py           # News headlines + StockTwits + Reddit
     fetch_news.py                # Ticker news + global macro news
     fetch_fundamentals.py        # Financials, balance sheet, cash flow, income
-  .claude/
-    commands/                    # Claude Code slash commands (skills)
-      analyse-ticker.md          # Master pipeline for single-ticker analysis
-      analyse-portfolio.md       # Portfolio-level analysis across all holdings
-      market-analyst.md          # Technical analysis role
-      sentiment-analyst.md       # Sentiment analysis role
-      news-analyst.md            # News research role
-      fundamentals-analyst.md    # Financial analysis role
-      bull-researcher.md         # Bullish case advocate
-      bear-researcher.md         # Bearish case advocate
-      research-manager.md        # Debate synthesis into investment plan
-      trader.md                  # Investment plan to transaction proposal
-      risk-aggressive.md         # High-risk/high-reward advocate
-      risk-conservative.md       # Asset protection advocate
-      risk-neutral.md            # Balanced perspective
-      portfolio-manager.md       # Final decision synthesis
+  .agents/
+    skills/                      # Codex skills mirrored from Claude commands
+      source-command-analyse-ticker/SKILL.md       # Master pipeline for single-ticker analysis
+      source-command-analyse-portfolio/SKILL.md    # Portfolio-level analysis across all holdings
+      source-command-market-analyst/SKILL.md       # Technical analysis role
+      source-command-sentiment-analyst/SKILL.md    # Sentiment analysis role
+      source-command-news-analyst/SKILL.md         # News research role
+      source-command-fundamentals-analyst/SKILL.md # Financial analysis role
+      source-command-bull-researcher/SKILL.md      # Bullish case advocate
+      source-command-bear-researcher/SKILL.md      # Bearish case advocate
+      source-command-research-manager/SKILL.md     # Debate synthesis into investment plan
+      source-command-trader/SKILL.md               # Investment plan to transaction proposal
+      source-command-risk-aggressive/SKILL.md      # High-risk/high-reward advocate
+      source-command-risk-conservative/SKILL.md    # Asset protection advocate
+      source-command-risk-neutral/SKILL.md         # Balanced perspective
+      source-command-portfolio-manager/SKILL.md    # Final decision synthesis
   orchestration/
     routines/                    # Routine definitions
     hooks/                       # Lifecycle hooks (decision logging, safety)
   config/
     portfolio.yaml               # ISA holdings, tickers, weights, simulation params
     providers.yaml               # API provider config (no secrets - those go in .env)
-  CLAUDE.md                      # This file
+  AGENTS.md                      # This file
   .mcp.json                      # MCP server configuration
   .env                           # API keys (gitignored, never committed)
   .gitignore
@@ -75,7 +75,7 @@ All knowledge and logs live there:
 
 ## Codex skill mirror
 
-Codex can execute the same skills-based pipeline through mirrored skills in
+Codex executes the skills-based pipeline through mirrored skills in
 `.agents/skills/source-command-*/SKILL.md`. These mirror the Claude Code
 commands in `.claude/commands/*.md`, with only platform-specific wrappers and
 path references changed.
@@ -144,11 +144,11 @@ Total cost: ~GBP 49,750. Total value: ~GBP 46,050.
 
 ## LLM provider
 
-Claude via Anthropic API (Teams subscription). Configure in .env:
+Codex via Anthropic API (Teams subscription). Configure in .env:
 
-- ANTHROPIC_API_KEY for Claude access
-- Use Claude Sonnet for analyst/retrieval agents (cost-efficient)
-- Use Claude Opus for debate/decision nodes (reasoning quality)
+- ANTHROPIC_API_KEY for Codex access
+- Use Codex Sonnet for analyst/retrieval agents (cost-efficient)
+- Use Codex Opus for debate/decision nodes (reasoning quality)
 
 ## Agent architecture
 
@@ -163,7 +163,7 @@ Seven agents across four teams (TradingAgents upstream design):
 
 - Stage 0: Fork, env setup, first test run (DONE)
 - Stage 1: Skills-based pipeline, UK ISA data integration (CURRENT)
-- Stage 2: Claude Code Local Routine scheduling (daily/weekly)
+- Stage 2: Codex Local Routine scheduling (daily/weekly)
 - Stage 3: Self-learning (ChromaDB RAG + reflection loop)
 - Stage 4: Portfolio optimisation + performance attribution
 
