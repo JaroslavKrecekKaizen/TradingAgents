@@ -28,33 +28,38 @@ The argument should be a ticker symbol, optionally followed by a date (defaults 
 
 Execute these steps in order. Spawn subagents for each role. Each subagent receives the role prompt from the corresponding skill file plus the relevant data context.
 
-### Step 1: Parse arguments
+### Step 1: Parse arguments and detect instrument type
 
 Extract ticker/ISIN and date from the args. If no date is provided, use today's date (YYYY-MM-DD format).
 
-Detect whether the input is an ISIN (12 characters, starts with 2-letter country code, e.g. IE00B5339C57) or a ticker (e.g. VUKG.L). This determines which fetch scripts to use in Step 2.
+Run the instrument type detection script to determine whether the input is a fund or a stock:
+```
+.venv/bin/python scripts/detect_instrument_type.py <ticker_or_ISIN>
+```
+
+This prints one of: `ETF`, `MUTUALFUND`, `EQUITY`, or `UNKNOWN`. Use this to choose the correct fundamentals script in Step 2.
 
 ### Step 2: Fetch data (parallel)
 
-Run all 4 data fetch scripts via Bash. These can run in parallel since they are independent.
+Run all 4 data fetch scripts via Bash. These can run in parallel since they are independent. Pass the original input (ticker or ISIN) to each script - they handle ISIN resolution internally.
 
-**For tickers** (e.g. VUKG.L, AAPL):
+**For funds** (instrument type is ETF or MUTUALFUND):
 ```
-.venv/bin/python scripts/fetch_market_data.py <ticker> <date>
-.venv/bin/python scripts/fetch_sentiment.py <ticker> <date>
-.venv/bin/python scripts/fetch_news.py <ticker> <date>
-.venv/bin/python scripts/fetch_fundamentals.py <ticker> <date>
-```
-
-**For ISINs** (e.g. IE00B5339C57 - OEIC/SICAV funds):
-```
-.venv/bin/python scripts/fetch_market_data.py <ISIN> <date>
-.venv/bin/python scripts/fetch_sentiment.py <ISIN> <date>
-.venv/bin/python scripts/fetch_news.py <ISIN> <date>
-.venv/bin/python scripts/fetch_fund_profile.py <ISIN> <date>
+.venv/bin/python scripts/fetch_market_data.py <input> <date>
+.venv/bin/python scripts/fetch_sentiment.py <input> <date>
+.venv/bin/python scripts/fetch_news.py <input> <date>
+.venv/bin/python scripts/fetch_fund_profile.py <input> <date>
 ```
 
-The ISIN is resolved to a Yahoo Finance ticker automatically by the scripts. The key difference is that ISINs use `fetch_fund_profile.py` instead of `fetch_fundamentals.py` because funds have holdings and sector data, not company financial statements.
+**For stocks** (instrument type is EQUITY or UNKNOWN):
+```
+.venv/bin/python scripts/fetch_market_data.py <input> <date>
+.venv/bin/python scripts/fetch_sentiment.py <input> <date>
+.venv/bin/python scripts/fetch_news.py <input> <date>
+.venv/bin/python scripts/fetch_fundamentals.py <input> <date>
+```
+
+The key difference: funds use `fetch_fund_profile.py` (holdings, sectors, Morningstar) while stocks use `fetch_fundamentals.py` (balance sheet, cash flow, income). The routing is based on instrument type, not input format - an ETF ticker like VUKG.L routes to fund profile, not company fundamentals.
 
 Capture each script's stdout as the data payload for the corresponding analyst.
 

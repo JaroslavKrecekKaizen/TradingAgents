@@ -1,6 +1,6 @@
 # Development plan
 
-## Current state (Stage 1 in progress, Stage 1.6 planned - 2026-06-14)
+## Current state (Stage 1 in progress, Stage 1.7 done - 2026-06-20)
 
 ### Stage 1 progress
 - [x] 5 data extraction CLI scripts (`scripts/fetch_*.py`) - tested with tickers and ISINs
@@ -368,14 +368,63 @@ Remaining identifer cleanup (not blocking, tracked separately):
   - If viable: `adanos_sentiment.py` fetcher (replaces StockTwits for UK)
 - [ ] Bluesky AT Protocol firehose - cashtag filtering for UK tickers
   - Requires persistent WebSocket consumer (Stage 2 scheduling prerequisite)
-- [ ] `yfinance_news.py` - add `yf.Search(theme)` fallback when
-  `Ticker.get_news()` returns zero (for news-analyst.md)
+- [x] News analyst UK data gap - solved in Stage 1.7 via Google News in
+  `fetch_news.py` (same pattern as sentiment pipeline)
 
 #### Phase 3: Behavioural flow data (PLANNED)
 
 - [ ] AJ Bell Favourite Funds / HL most-bought as OEIC sentiment proxy
   - Weekly scrape cadence, editorial web pages
 - [ ] Google News caching layer (skip seen articles, 6h TTL)
+
+## Stage 1.7: Fund-aware pipeline routing (DONE - 2026-06-20)
+
+### Problem
+
+The first end-to-end `/analyse-ticker VUKG.L` run (2026-06-20) revealed that
+2 of 4 analysts were working with inadequate or wrong data:
+
+1. **Fundamentals Analyst** received empty financial statements (balance sheet,
+   cashflow, income) because the pipeline routed VUKG.L (an ETF) to
+   `fetch_fundamentals.py` (designed for company stocks). Should have used
+   `fetch_fund_profile.py` which returns holdings, sectors, and Morningstar data.
+   Root cause: routing was based on input format (ISIN vs ticker), not instrument
+   type. Only ISINs got fund profile; ticker ETFs got company fundamentals.
+
+2. **News Analyst** received 0 ticker-specific articles (yfinance returns nothing
+   for .L tickers) and relied entirely on 10 generic global macro headlines.
+   Same zero-data problem that sentiment had before Stage 1.6, but `fetch_news.py`
+   was never updated with UK-specific sources.
+
+### Changes
+
+- [x] `scripts/detect_instrument_type.py` (new) - prints yfinance `quoteType`
+  (ETF, MUTUALFUND, EQUITY) for any ticker or ISIN. Used by analyse-ticker to
+  route to the correct fundamentals script.
+- [x] `.claude/commands/analyse-ticker.md` - Step 1-2 rewritten: runs instrument
+  type detection, routes ETF/MUTUALFUND to `fetch_fund_profile.py`, EQUITY to
+  `fetch_fundamentals.py`. No longer uses ISIN detection for routing.
+- [x] `scripts/fetch_news.py` - added Google News for UK assets using the same
+  registry pattern as `fetch_sentiment.py`. UK assets get fund-name Google News
+  section before the yfinance section. Non-UK assets unchanged.
+- [x] `.claude/commands/news-analyst.md` - added source-type awareness (Google
+  News vs yfinance), relevance classification (fund-specific/asset-class/tangential),
+  Source column in output table.
+- [x] Codex skills synced via `sync_agentic_commands.py`
+- [x] All 328 existing tests pass
+
+Known limitation: ETCs (e.g. PHGP.L gold) return EQUITY from yfinance, so they
+still route to `fetch_fundamentals.py`. This is acceptable because ETCs don't
+have fund holdings data. Could be addressed in future via registry-based override.
+
+### Future work (not this stage)
+
+- Phase 2: Holdings-derived intelligence (fetch news/sentiment for top 5 fund
+  holdings to provide holdings-level signal to analysts)
+- Phase 3: Portfolio look-through (cross-fund holdings overlap, sector/geography
+  decomposition, true UK exposure calculation)
+
+---
 
 ### Verified data sources (tested 2026-06-14)
 
