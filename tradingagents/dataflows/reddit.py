@@ -46,9 +46,9 @@ _ATOM_NS = {"atom": "http://www.w3.org/2005/Atom"}
 DEFAULT_SUBREDDITS = ("wallstreetbets", "stocks", "investing")
 
 
-def _search_qs(ticker: str, limit: int) -> str:
+def _search_qs(query: str, limit: int) -> str:
     return urlencode({
-        "q": ticker,
+        "q": query,
         "restrict_sr": "on",
         "sort": "new",
         "t": "week",  # last 7 days
@@ -143,19 +143,26 @@ def fetch_reddit_posts(
     limit_per_sub: int = 5,
     timeout: float = 10.0,
     inter_request_delay: float = 0.4,
+    search_query: Optional[str] = None,
 ) -> str:
     """Fetch recent Reddit posts mentioning ``ticker`` across finance
     subreddits and return them as a formatted plaintext block.
 
+    When ``search_query`` is provided, it is used as the Reddit search
+    term instead of ``ticker``. This allows searching by fund name
+    (e.g. "Vanguard FTSE 100") for UK assets where the ticker string
+    returns zero results.
+
     ``inter_request_delay`` keeps us under Reddit's public rate limit
     (~10 req/min per IP) even if the caller queries many subreddits.
     """
+    query = search_query if search_query is not None else ticker
     blocks = []
     total_posts = 0
     for i, sub in enumerate(subreddits):
         if i > 0:
             time.sleep(inter_request_delay)
-        posts = _fetch_subreddit(ticker, sub, limit_per_sub, timeout)
+        posts = _fetch_subreddit(query, sub, limit_per_sub, timeout)
         total_posts += len(posts)
         if not posts:
             blocks.append(f"r/{sub}: <no posts found mentioning {ticker.upper()} in the past 7 days>")
