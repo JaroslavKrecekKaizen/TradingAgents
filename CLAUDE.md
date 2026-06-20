@@ -140,13 +140,20 @@ ISINs are auto-resolved to Yahoo Finance tickers via `isin_resolver.py`.
 - VJPB.L (Japan Acc - 18%)
 - LifeStrategy 100% Equity Fund Acc (ISIN GB00B41XG308 - 28%)
 
-**AJ Bell ISA** (~GBP 51K value, thematic/active + gold):
-- PHGP.L (WisdomTree Physical Gold - 20%)
-- SGLP.L (Invesco Physical Gold ETC - 9%)
-- L&G Global Technology Index I Acc (ISIN GB00B0CNH163 - 28%)
-- Fidelity Global Technology W-Acc-GBP (ISIN LU1033663649 - 20%)
-- Janus Henderson Global Financials I Acc (ISIN GB0031919235 - 12%)
-- Polar Capital Global Insurance I Acc (ISIN IE00B5339C57 - 11%)
+**AJ Bell ISA** (~GBP 70K value, thematic/active + commodities + defence):
+- L&G Global Technology Index I Acc (ISIN GB00B0CNH163 - 20%)
+- Fidelity Global Technology W-Acc-GBP (ISIN LU1033663649 - 15%)
+- PHGP.L (WisdomTree Physical Gold - 14%)
+- Janus Henderson Global Financials I Acc (ISIN GB0031919235 - 9%)
+- Polar Capital Global Insurance I Acc (ISIN IE00B5339C57 - 8%)
+- L&G Global Infrastructure Index I Acc (SEDOL BF0TZG2 - 7%)
+- SGLP.L (Invesco Physical Gold ETC - 6%)
+- Fidelity Index Emerging Markets P Acc (SEDOL BHZK8D2 - 5%)
+- DFNG.L (VanEck Defense ETF - 4%)
+- WDEP.L (WisdomTree Europe Defence ETF - 4%)
+- WREE.L (WisdomTree Strategic Metals & Rare Earths Miners ETF - 4%)
+- URNG.L (Global X Uranium ETF - 3%)
+- Cash GBP - 0.2%
 
 ## Tech stack
 

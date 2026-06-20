@@ -6,3 +6,6 @@ args = [
     "/Users/jarda/Documents/ATES/10-projects/trading-system",
 ]
 command = "npx"
+
+[mcp_servers.filesystem.tools.write_file]
+approval_mode = "approve"
