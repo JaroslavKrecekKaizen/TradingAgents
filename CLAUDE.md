@@ -26,8 +26,8 @@ trading-system/                  # Root = forked TradingAgents repo
   tradingagents/                 # Upstream Python package
   scripts/
     fetch_market_data.py         # OHLCV + indicators + verified snapshot
-    fetch_sentiment.py           # News headlines + StockTwits + Reddit
-    fetch_news.py                # Ticker news + global macro news
+    fetch_sentiment.py           # Google News + StockTwits proxy + holdings sentiment
+    fetch_news.py                # Google News + holdings news + global macro news
     fetch_fundamentals.py        # Financials, balance sheet, cash flow, income
     fetch_fund_profile.py        # Fund profile: holdings, sectors, Morningstar (for OEICs/SICAVs)
   .claude/
@@ -186,7 +186,11 @@ Seven agents across four teams (TradingAgents upstream design):
 ## Development stages
 
 - Stage 0: Fork, env setup, first test run (DONE)
-- Stage 1: Skills-based pipeline, UK ISA data integration (CURRENT)
+- Stage 1: Skills-based pipeline, UK ISA data integration (DONE)
+  - 1.5: Codex skill sync (DONE)
+  - 1.6: UK sentiment pipeline - Google News, StockTwits proxy (DONE)
+  - 1.7: Fund-aware routing, Google News for news analyst (DONE)
+  - 1.8: Holdings-derived news/sentiment, drop dead sources (DONE)
 - Stage 2: Claude Code Local Routine scheduling (daily/weekly)
 - Stage 3: Self-learning (ChromaDB RAG + reflection loop)
 - Stage 4: Portfolio optimisation + performance attribution

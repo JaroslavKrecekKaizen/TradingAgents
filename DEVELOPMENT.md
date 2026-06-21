@@ -1,6 +1,6 @@
 # Development plan
 
-## Current state (Stage 1 in progress, Stage 1.7 done - 2026-06-20)
+## Current state (Stage 1 complete, Stage 1.8 done - 2026-06-21)
 
 ### Stage 1 progress
 - [x] 5 data extraction CLI scripts (`scripts/fetch_*.py`) - tested with tickers and ISINs
@@ -417,12 +417,105 @@ Known limitation: ETCs (e.g. PHGP.L gold) return EQUITY from yfinance, so they
 still route to `fetch_fundamentals.py`. This is acceptable because ETCs don't
 have fund holdings data. Could be addressed in future via registry-based override.
 
-### Future work (not this stage)
+---
 
-- Phase 2: Holdings-derived intelligence (fetch news/sentiment for top 5 fund
-  holdings to provide holdings-level signal to analysts)
-- Phase 3: Portfolio look-through (cross-fund holdings overlap, sector/geography
-  decomposition, true UK exposure calculation)
+## Stage 1.8: Holdings-derived intelligence + data cleanup (DONE - 2026-06-21)
+
+### Problem
+
+A full data quality audit on 2026-06-21 revealed that all 18 holdings receive
+C-rated (lowest usable tier) sentiment data. Three root causes:
+
+1. **yfinance ticker news returns zero articles for all .L instruments.** This was
+   the primary news source and it returned nothing for UK-listed assets. Google News
+   by fund name partially filled the gap (Stage 1.7) but had poor coverage for some
+   holdings - WREE.L's fund name matched a footballer, returning 1 irrelevant article.
+
+2. **Reddit is fully blocked.** Every call returned HTTP 403 (JSON) then 429 (RSS
+   fallback). Zero posts returned for any holding across all subreddits.
+
+3. **ApeWisdom returned empty for 100% of proxy tickers.** Not a single holding's
+   US proxy appeared in the top 300 trending stocks.
+
+Key insight: 8 of 10 ETFs already have top holdings data in yfinance (e.g. VUKG.L
+holds HSBA.L 9.6%, AZN.L 8.3%, SHEL.L 7.1%). These underlying large-cap stocks
+have rich yfinance news and StockTwits coverage.
+
+### Changes
+
+- [x] `tradingagents/dataflows/fund_holdings.py` (new) - fetches top holdings from
+  yfinance fund data, then gathers yfinance news (top 5 holdings) and StockTwits
+  sentiment (top 3 holdings) for the underlying stocks. Strips exchange suffixes
+  (.L, .AX, .TO) for StockTwits lookups.
+- [x] `scripts/fetch_news.py` - added TOP HOLDINGS NEWS section for UK assets.
+  Also added theme_keywords from registry as additional Google News queries.
+- [x] `scripts/fetch_sentiment.py` - replaced ApeWisdom and Reddit (both dead)
+  with STOCKTWITS (TOP HOLDINGS) section. Also added theme_keywords to Google
+  News queries.
+- [x] `tradingagents/dataflows/uk_asset_registry.py` - removed unused
+  `uk_subreddits` field from `AssetSentimentMeta`.
+- [x] `.claude/commands/news-analyst.md` - added Top Holdings News source type
+  with materiality-by-weight guidance. Updated Google News description to note
+  theme keyword search.
+- [x] `.claude/commands/sentiment-analyst.md` - replaced Reddit/ApeWisdom source
+  types with Holdings type. Updated coverage grading (B now includes holdings
+  data). Updated output breakdown to match new sources.
+- [x] Codex skills synced.
+
+### Measured improvement
+
+| Holding | Google News before | Google News after | Holdings news | Holdings sentiment |
+|---------|-------------------|------------------|---------------|-------------------|
+| WREE.L | 1 (irrelevant) | 20 (rare earth/mining) | 9 MP Materials articles | REMX proxy + holdings |
+| DFNG.L | 7 | 20 (added defence themes) | 9+ PLTR articles | PLTR 30% bull, RTX data |
+| VUKG.L | 7 | 20 (added FTSE 100 themes) | HSBA/AZN/SHEL news | .L suffix issue (see below) |
+
+### Known limitation
+
+VUKG.L's top holdings are UK-listed (HSBA.L, AZN.L, SHEL.L). Stripping the .L
+suffix gives HSBA, which is not valid on StockTwits (the US ticker is HSBC). This
+affects FTSE 100 constituents specifically. Holdings *news* still works fine via
+yfinance. Not worth a ticker-mapping table for one ETF.
+
+### Monitoring (week of 2026-06-22 to 2026-06-28)
+
+Run `/analyse-portfolio` or individual `/analyse-ticker` runs and compare:
+- [ ] Do news analysts cite holdings-derived articles in their reports?
+- [ ] Do sentiment analysts use holdings sentiment to upgrade coverage from C to B?
+- [ ] Are theme keyword Google News results higher quality than fund-name-only?
+- [ ] Has removal of Reddit/ApeWisdom reduced noise without losing signal?
+- [ ] Are any holdings still receiving D-rated (near-empty) data?
+
+### Future improvements (not this stage)
+
+#### Near-term (data quality, low effort)
+- [ ] **Investing.com sentiment scoreboards** - structured bull/bear vote ratios
+  for UK ETFs. Scrapeable HTML, no API. Most promising structured sentiment source.
+  Tested viable 2026-06-14 but not implemented.
+- [ ] **US ticker mapping for UK dual-listed stocks** - map HSBA.L->HSBC,
+  AZN.L->AZN, SHEL.L->SHEL for StockTwits lookups on VUKG.L holdings.
+  Small lookup table, fixes the one ETF where holdings sentiment fails.
+- [ ] **Google News caching** - skip articles already seen in recent runs (6h TTL).
+  Reduces noise in sequential runs and speeds up portfolio analysis.
+
+#### Medium-term (new capabilities)
+- [ ] **Portfolio look-through** (Phase 3 from plan) - cross-fund holdings overlap
+  analysis, sector/geography decomposition, true exposure calculation. "You don't
+  own 18 funds, you own N securities with these sector/geography tilts."
+- [ ] **Fund flow proxy** - monitor fund size changes over time as proxy for
+  institutional sentiment. AJ Bell Favourite Funds / HL most-bought lists as
+  OEIC sentiment proxy.
+- [ ] **Adanos API** - aggregated Reddit + X + news sentiment, 250 free calls/mo,
+  covers 80 exchanges. Needs registration to test UK ETF coverage.
+
+#### Longer-term (Stage 3-4 prerequisites)
+- [ ] **Reflection loop** - write reflections for existing 20+ decisions by
+  comparing recommendations against actual price movement. Bootstrap the
+  self-learning feedback cycle.
+- [ ] **Factor exposure analysis** - map holdings to Fama-French risk factors
+  (value, growth, momentum, quality). Free data, needs model code.
+- [ ] **Tracking error and attribution** - decompose fund returns into benchmark +
+  sector allocation + stock selection effects using QuantStats.
 
 ---
 
