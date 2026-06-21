@@ -13,8 +13,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-_UK_SUBREDDITS = ("UKPersonalFinance", "UKInvesting", "FIREUK")
-
 
 @dataclass(frozen=True)
 class AssetSentimentMeta:
@@ -23,7 +21,6 @@ class AssetSentimentMeta:
     search_names: list[str]
     us_proxy: str | None
     theme_keywords: list[str]
-    uk_subreddits: tuple[str, ...] = _UK_SUBREDDITS
     asset_type: str = "etf"
 
 

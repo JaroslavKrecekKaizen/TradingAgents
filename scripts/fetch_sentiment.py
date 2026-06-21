@@ -1,12 +1,12 @@
 #!/usr/bin/env -S .venv/bin/python
-"""Fetch sentiment data: news headlines, StockTwits messages, and Reddit posts.
+"""Fetch sentiment data: news headlines, StockTwits messages, and holdings sentiment.
 
 Usage: python scripts/fetch_sentiment.py <ticker> <date>
 Example: python scripts/fetch_sentiment.py AAPL 2026-06-13
 
 For UK assets in the registry, routes to UK-specific sources: Google News
-RSS (by fund name), StockTwits (US proxy), ApeWisdom (Reddit/4chan buzz),
-and Reddit (UK + global subreddits by fund name/theme).
+RSS (by fund name + theme keywords), StockTwits (US proxy + top holdings),
+and holdings-derived sentiment.
 
 Outputs structured text to stdout for consumption by Claude Code skills.
 """
@@ -17,9 +17,8 @@ from dateutil.relativedelta import relativedelta
 
 sys.path.insert(0, ".")
 
-from tradingagents.dataflows.apewisdom import fetch_apewisdom_mentions
+from tradingagents.dataflows.fund_holdings import fetch_holdings_sentiment
 from tradingagents.dataflows.google_news import fetch_google_news
-from tradingagents.dataflows.reddit import DEFAULT_SUBREDDITS, fetch_reddit_posts
 from tradingagents.dataflows.stocktwits import fetch_stocktwits_messages
 from tradingagents.dataflows.symbol_utils import normalize_symbol, is_isin
 from tradingagents.dataflows.uk_asset_registry import get_sentiment_meta
@@ -36,18 +35,19 @@ def _section(title: str) -> None:
 
 
 def _fetch_uk_sentiment(ticker: str, meta, curr_date: str, start_date: str) -> None:
-    """UK asset pipeline: Google News + StockTwits proxy + ApeWisdom + Reddit UK/global."""
+    """UK asset pipeline: Google News + StockTwits proxy + holdings sentiment."""
 
-    # Google News (primary UK source - searched by fund name)
+    # Google News (primary UK source - searched by fund name + theme keywords)
+    all_queries = meta.search_names + meta.theme_keywords
     _section(f"GOOGLE NEWS: {meta.search_names[0]} ({ticker})")
     try:
-        news = fetch_google_news(meta.search_names)
+        news = fetch_google_news(all_queries)
         print(news)
     except Exception as e:
         print(f"Error fetching Google News: {e}", file=sys.stderr)
         print(f"<Google News unavailable: {e}>")
 
-    # StockTwits via US proxy (labelled as proxy)
+    # StockTwits via US proxy (sector-level sentiment)
     if meta.us_proxy:
         _section(f"STOCKTWITS (US PROXY via {meta.us_proxy} for {ticker})")
         try:
@@ -57,50 +57,18 @@ def _fetch_uk_sentiment(ticker: str, meta, curr_date: str, start_date: str) -> N
             print(f"Error fetching StockTwits proxy: {e}", file=sys.stderr)
             print(f"<StockTwits proxy unavailable: {e}>")
 
-    # ApeWisdom Reddit/4chan buzz for proxy ticker
-    if meta.us_proxy:
-        _section(f"APEWISDOM (US PROXY BUZZ): {meta.us_proxy} trending on Reddit/4chan?")
-        try:
-            apewisdom = fetch_apewisdom_mentions([meta.us_proxy])
-            print(apewisdom)
-        except Exception as e:
-            print(f"Error fetching ApeWisdom: {e}", file=sys.stderr)
-            print(f"<ApeWisdom unavailable: {e}>")
-
-    # Reddit UK subreddits (searched by fund name)
-    _section(
-        f"REDDIT (UK): {ticker} via "
-        + ", ".join(f"r/{s}" for s in meta.uk_subreddits)
-    )
+    # StockTwits for top underlying holdings (direct sentiment)
+    _section(f"STOCKTWITS (TOP HOLDINGS): {ticker}")
     try:
-        reddit_uk = fetch_reddit_posts(
-            ticker,
-            subreddits=meta.uk_subreddits,
-            search_query=meta.search_names[0],
-        )
-        print(reddit_uk)
+        holdings_sentiment = fetch_holdings_sentiment(ticker, max_holdings=3, msgs_per_holding=10)
+        print(holdings_sentiment)
     except Exception as e:
-        print(f"Error fetching Reddit UK: {e}", file=sys.stderr)
-        print(f"<Reddit UK unavailable: {e}>")
-
-    # Reddit global subreddits (searched by theme keywords)
-    if meta.theme_keywords:
-        theme_query = meta.theme_keywords[0]
-        _section(f"REDDIT (GLOBAL): {theme_query} themes")
-        try:
-            reddit_global = fetch_reddit_posts(
-                ticker,
-                subreddits=DEFAULT_SUBREDDITS,
-                search_query=theme_query,
-            )
-            print(reddit_global)
-        except Exception as e:
-            print(f"Error fetching Reddit global: {e}", file=sys.stderr)
-            print(f"<Reddit global unavailable: {e}>")
+        print(f"Error fetching holdings sentiment: {e}", file=sys.stderr)
+        print(f"<holdings sentiment unavailable: {e}>")
 
 
 def _fetch_default_sentiment(ticker: str, curr_date: str, start_date: str) -> None:
-    """Default US-style pipeline: yfinance news + StockTwits + Reddit."""
+    """Default US-style pipeline: yfinance news + StockTwits."""
 
     # News headlines (institutional framing)
     _section(f"NEWS HEADLINES: {ticker} ({start_date} to {curr_date})")
@@ -119,15 +87,6 @@ def _fetch_default_sentiment(ticker: str, curr_date: str, start_date: str) -> No
     except Exception as e:
         print(f"Error fetching StockTwits: {e}", file=sys.stderr)
         print(f"<stocktwits unavailable: {e}>")
-
-    # Reddit posts
-    _section(f"REDDIT: {ticker}")
-    try:
-        reddit = fetch_reddit_posts(ticker)
-        print(reddit)
-    except Exception as e:
-        print(f"Error fetching Reddit: {e}", file=sys.stderr)
-        print(f"<reddit unavailable: {e}>")
 
 
 def main():

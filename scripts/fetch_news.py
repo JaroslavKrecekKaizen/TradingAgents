@@ -16,6 +16,7 @@ from dateutil.relativedelta import relativedelta
 
 sys.path.insert(0, ".")
 
+from tradingagents.dataflows.fund_holdings import fetch_holdings_news
 from tradingagents.dataflows.google_news import fetch_google_news
 from tradingagents.dataflows.yfinance_news import get_news_yfinance, get_global_news_yfinance
 from tradingagents.dataflows.symbol_utils import normalize_symbol, is_isin
@@ -52,9 +53,10 @@ def main():
 
     # Google News for UK assets (primary fund-specific news source)
     if meta is not None:
+        all_queries = meta.search_names + meta.theme_keywords
         _section(f"GOOGLE NEWS: {meta.search_names[0]} ({ticker})")
         try:
-            news = fetch_google_news(meta.search_names)
+            news = fetch_google_news(all_queries)
             print(news)
         except Exception as e:
             print(f"Error fetching Google News: {e}", file=sys.stderr)
@@ -68,6 +70,16 @@ def main():
     except Exception as e:
         print(f"Error fetching ticker news: {e}", file=sys.stderr)
         print(f"<ticker news unavailable: {e}>")
+
+    # Holdings-derived news for funds/ETFs
+    if meta is not None:
+        _section(f"TOP HOLDINGS NEWS: {ticker}")
+        try:
+            holdings_news = fetch_holdings_news(ticker, start_date, curr_date)
+            print(holdings_news)
+        except Exception as e:
+            print(f"Error fetching holdings news: {e}", file=sys.stderr)
+            print(f"<holdings news unavailable: {e}>")
 
     # Global macro news
     _section(f"GLOBAL MACRO NEWS (past {NEWS_LOOKBACK_DAYS} days)")
